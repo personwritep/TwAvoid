@@ -8,6 +8,8 @@
 // @match        https://x.com/*
 // @icon        https://www.google.com/s2/favicons?sz=64&domain=twitter.com
 // @grant        none
+// @updateURL        https://github.com/personwritep/TwAvoid/raw/main/TwAvoid.user.js
+// @downloadURL        https://github.com/personwritep/TwAvoid/raw/main/TwAvoid.user.js
 // ==/UserScript==
 
 
