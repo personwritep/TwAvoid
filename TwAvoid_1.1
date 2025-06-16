@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        TwAvoid
+// @name        TwAvoid　🔲
 // @namespace        http://tampermonkey.net/
 // @version        1.1
 // @description        Twitter Filter
@@ -214,14 +214,6 @@ function card_ck(){
 
 
 function disp_panel(){
-    let night=0;
-    let cookie_req=document.cookie.split('; ').find(row=>row.startsWith('night_mode'));
-    if(cookie_req){
-        if(cookie_req.split('=')[1]==null){
-            night=0; }
-        else{
-            night=cookie_req.split('=')[1]; }}
-
     let panel=
         '<div id="twa_panel">'+
         '<div class="swich_box">'+
@@ -245,9 +237,10 @@ function disp_panel(){
         '<ul class="avoid_ul"></ul>'+
         '</div>'+
 
-        '<style>#twa_panel { position: fixed; top: 60px; right: 40px; width: 400px; '+
-        'font: 16px Meiryo; color: #000; background: #f4fbff; padding: 15px; overflow: hidden; '+
-        'border: 1px solid #aaa; border-radius: 6px; } '+
+        '<style>'+
+        '#twa_panel { position: fixed; top: 60px; right: 40px; width: 400px; padding: 15px; '+
+        'font: 16px Meiryo; color: #000; background: #f4fbff; border: 1px solid #aaa; '+
+        'border-radius: 6px; box-shadow: 10px 20px 30px 0 #00000040; overflow: hidden; } '+
         '.swich_box { display: flex; height: 30px; align-items: center; '+
         'justify-content: space-between; } '+
         '.swich_box input { font: 14px Meiryo; padding: 3px 6px 2px; border: 1px solid #aaa; '+
@@ -272,12 +265,8 @@ function disp_panel(){
         '.avoid_li { padding: 3px 10px 0; height: 26px; border-bottom: 1px solid #ddd; '+
         'white-space: nowrap; overflow-x: scroll; scrollbar-width: none; } '+
         '.avoid_li:first-child { border-top: 1px solid #ddd; } '+
-        '.avoid_li::-webkit-scrollbar { display: none; } ';
-
-    if(night==0){
-        panel+='#twa_panel { box-shadow: 10px 20px 30px 0 #ccc; } '; }
-
-    panel+='</style></div>';
+        '.avoid_li::-webkit-scrollbar { display: none; } '+
+        '</style></div>';
 
     if(!document.querySelector('#twa_panel')){
         document.body.insertAdjacentHTML('beforeend', panel); }
