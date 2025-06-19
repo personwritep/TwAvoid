@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        TwAvoid
 // @namespace        http://tampermonkey.net/
-// @version        1.1
+// @version        1.2
 // @description        Twitter Filter
 // @author        Everyone
 // @match        https://twitter.com/*
@@ -14,10 +14,7 @@
 
 
 let mode; // フィルターの追加「1」削除「0」
-let mode_lt; // Link「0」・Text「1」 の処理選択
 let avoid=[]; // リンクフィルターの配列
-let avoid_tx=[]; // テキストフィルターの配列
-let avoid_regexp; // 正規表現オブジェクト
 let home_ua; // 開いているタイムラインのユーザーアカウント
 
 
@@ -25,19 +22,6 @@ let read_json=localStorage.getItem('TwAvoid_Link'); // ローカルストレー�
 avoid=JSON.parse(read_json);
 if(avoid==null){
     avoid=['temporary-link']; }
-
-read_json=localStorage.getItem('TwAvoid_Text'); // ローカルストレージ保存名
-avoid_tx=JSON.parse(read_json);
-if(avoid_tx==null){
-    avoid_tx=[]; }
-new_reg();
-
-function new_reg(){
-    if(avoid_tx.length==0){
-        avoid_regexp=0; } // 配列の子要素が0の場合は特別処理
-    if(avoid_tx.length>0){
-        let tmp_ex=avoid_tx.join('|');
-        avoid_regexp=new RegExp(tmp_ex); }}
 
 
 
@@ -97,7 +81,6 @@ function s_meter(){
             if(ok){
                 disp_panel();
                 mode=0;
-                mode_lt=0;
                 set_link('');
                 s_meter(); }
             else{
@@ -133,13 +116,8 @@ function main(){
             let url=[];
             for(let i=0; i<all_link.length; i++){
                 url.push(select_url(all_link[i])); }
-            if(check_url(url)){ // check1
+            if(check_url(url)){
                 hav=1; }
-            else{
-                if(avoid_regexp!=0){ // 0の時は処理しない
-                    let tweet_text=tweet.textContent;
-                    if(avoid_regexp.test(tweet_text)){ // check2
-                        hav=1; }}}
 
             if(hav==1){
                 count+=1;
@@ -158,7 +136,8 @@ function main(){
             let result=url.filter(data=>avoid.includes(data));
             if(result.length>0){
                 return true; }}
-    }
+
+    } // fuse==0
 
 
     setTimeout(()=>{
@@ -168,7 +147,6 @@ function main(){
     }, 200);
 
 } // main()
-
 
 
 
@@ -182,7 +160,6 @@ function link_pointer(event){
             let link_url=link_a.getAttribute('href');
             disp_panel();
             mode=1;
-            mode_lt=0;
             set_link(link_url);
         }}}
 
@@ -214,31 +191,38 @@ function card_ck(){
 
 
 function disp_panel(){
+
+    let help_url='https://ameblo.jp/personwritep/entry-12910978150.html';
+
     let panel=
         '<div id="twa_panel">'+
         '<div class="swich_box">'+
         '<div class="swich">'+
-        '<input class="li_tx" type="button" value="Link">'+
         '<input class="add_b" type="button" value="フィルター追加">'+
         '<input class="rem_b" type="button" value="フィルター削除">'+
         '</div>'+
         '<div class="twa_file">'+
-        '<input class="memo_w" type="button" value="ファイルに保存する">'+
-        '<input class="memo_r" type="button" value="ファイルから読込む">'+
+        '<input class="memo_w" type="button" value="ファイル保存">'+
+        '<input class="memo_r" type="button" value="ファイルを読込む">'+
         '<input class="twa_file_input" type="file">'+
         '</div>'+
         '<input class="twa_memo" type="button" value="M">'+
+        '<a href="'+ help_url +'" rel="noopener noreferrer" target="_blank">'+
+        '<p class="help_twa">?</p></a>'+
         '<input class="twa_close" type="button" value="✖">'+
         '</div>'+
+
+        '<div class="main_panel">'+
         '<div>'+
         '<input class="set_box" type="text">'+
         '</div>'+
         '<div class="avoid_list">'+
         '<ul class="avoid_ul"></ul>'+
         '</div>'+
+        '</div>'+
 
         '<style>'+
-        '#twa_panel { position: fixed; top: 60px; right: 40px; width: 400px; padding: 15px; '+
+        '#twa_panel { position: fixed; top: 60px; right: 40px; width: 380px; padding: 15px; '+
         'font: 16px Meiryo; color: #000; background: #f4fbff; border: 1px solid #aaa; '+
         'border-radius: 6px; box-shadow: 10px 20px 30px 0 #00000040; overflow: hidden; } '+
         '.swich_box { display: flex; height: 30px; align-items: center; '+
@@ -246,18 +230,21 @@ function disp_panel(){
         '.swich_box input { font: 14px Meiryo; padding: 3px 6px 2px; border: 1px solid #aaa; '+
         'border-radius: 4px; height: 27px; } '+
         '.swich_box input.li_tx { font: normal 16px/23px Meiryo; } '+
-        '.swich { display: flex; justify-content: space-between; width: 288px; } '+
-        '.set_box { font: 16px Meiryo; padding: 4px 10px 3px; margin: 10px 0; '+
+        '.swich { display: flex; justify-content: space-between; width: 236px; } '+
+        '.add_b { margin-right: 12px; } '+
+        '.set_box { font: 16px Meiryo; padding: 4px 10px 3px; margin: 12px 0; '+
         'width: 100%; background: #fff; outline: none; border: 1px solid #aaa; } '+
 
         '.twa_file { position: absolute; top: 17px; left: 15px; z-index: 1; '+
         'background: #fff; box-shadow: 0 0 0 100vh #fff; display: none; } '+
-        '.memo_w { margin-right: 8px; } '+
+        '.memo_w { background: #fff; margin-right: 12px; } '+
+        '.memo_r { background: #fff; } '+
+        '.memo_w:hover, .memo_r:hover { background: #e1f5fe; } '+
         '.twa_file_input { display: none; } '+
         '.twa_memo, .twa_close { z-index: 1; } '+
 
         '.set_box::placeholder { font-size: 14px; } '+
-        '.avoid_list { margin: 10px 0 0; padding: 4px 0; min-height: 30px; max-height: 240px; '+
+        '.avoid_list { padding: 4px 0; min-height: 30px; max-height: calc(100vh - 200px); '+
         'border: 1px solid #aaa; overflow-y: scroll; scrollbar-color: #5da2e8 #ecf6f8; } '+
         '.avoid_ul { list-style: none; padding: 0; margin: 0; } '+
         '.avoid_ul.rem { background: #fff; } '+
@@ -266,6 +253,10 @@ function disp_panel(){
         'white-space: nowrap; overflow-x: scroll; scrollbar-width: none; } '+
         '.avoid_li:first-child { border-top: 1px solid #ddd; } '+
         '.avoid_li::-webkit-scrollbar { display: none; } '+
+
+        '.help_twa { position: relative; z-index: 1; font: 14px Meiryo; color: #000; '+
+        'height: 16px; line-height: 10px; padding: 3px; margin: 6px -8px 0 0; '+
+        'border: 1px solid #999; border-radius: 20px; } '+
         '</style></div>';
 
     if(!document.querySelector('#twa_panel')){
@@ -290,29 +281,6 @@ function set_link(str){
     else{
         rem_link(); }
 
-
-    let li_tx=document.querySelector('.li_tx');
-    if(li_tx && twa_panel){
-        if(mode_lt==0){
-            li_tx.value='Link';
-            twa_panel.style.background='#f4fbff'; }
-        else{
-            li_tx.value='Text';
-            twa_panel.style.background='#fff7e4'; }
-
-        li_tx.onclick=()=>{
-            if(mode_lt==0){
-                mode_lt=1;
-                li_tx.value='Text';
-                twa_panel.style.background='#fff7e4';
-                set_link(''); }
-            else{
-                mode_lt=0;
-                li_tx.value='Link';
-                twa_panel.style.background='#f4fbff';
-                set_link(''); }}}
-
-
     let twa_close=document.querySelector('.twa_close');
     if(twa_panel && twa_close){
         twa_close.onclick=()=>{
@@ -325,18 +293,27 @@ function set_link(str){
 function add_link(){
     let add_b=document.querySelector('.add_b');
     add_b.style.outline='2px solid #2196f3';
+    add_b.style.background='#fff';
     let rem_b=document.querySelector('.rem_b');
     rem_b.style.outline='';
+    rem_b.style.background='';
+
     let set_box=document.querySelector('.set_box');
     set_box.disabled=false;
     set_box.style.borderColor='';
     set_box.style.background='';
-    if(mode_lt==0){
-        set_box.setAttribute('placeholder', 'ページ上のリンクを「Alt+右Click」して採取'); }
-    else{
-        set_box.setAttribute('placeholder', 'テキストを記入するかコピーして貼付けます'); }
+    set_box.setAttribute('placeholder', 'ページ上のリンクを「Alt+右Click」して採取');
     let avoid_ul=document.querySelector('.avoid_ul');
     avoid_ul.classList.remove('rem');
+
+
+    add_b.onmouseover=()=>{
+        if(set_box.value){
+            add_b.style.background='#b2ebf2'; }}
+
+    add_b.onmouseleave=()=>{
+        if(mode==1){
+            add_b.style.background='#fff'; }}
 
 
     add_b.onclick=()=>{
@@ -344,16 +321,11 @@ function add_link(){
         if(link_str!=''){
             if(space_check(link_str)){
                 alert("⛔ 空白文字が含まれています"); }
-            else if(mode_lt==0 && avoid.includes(link_str)){
+            else if(avoid.includes(link_str)){
                 alert("⛔ 既に登録済のリンクコードです"); }
-            else if(mode_lt==1 && avoid_tx.includes(link_str)){
-                alert("⛔ 既に登録済のテキストです"); }
             else{
                 set_box.value='';
-                if(mode_lt==0 ){
-                    avoid.push(link_str); }
-                else{
-                    avoid_tx.push(link_str); }
+                avoid.push(link_str);
                 set_new_link(); }}
 
         function space_check(str){
@@ -373,8 +345,11 @@ function add_link(){
 function rem_link(){
     let add_b=document.querySelector('.add_b');
     add_b.style.outline='';
+    add_b.style.background='';
     let rem_b=document.querySelector('.rem_b');
     rem_b.style.outline='2px solid #2196f3';
+    rem_b.style.background='#fff';
+
     let set_box=document.querySelector('.set_box');
     set_box.setAttribute('placeholder', '下のフィルターリストを「左Click」して指定');
     set_box.disabled=true;
@@ -397,17 +372,28 @@ function rem_link(){
             avoid_li[k].style.background=''; }}
 
 
+    rem_b.onmouseover=()=>{
+        let selected=0;
+        let avoid_li=document.querySelectorAll('.avoid_li');
+        for(let k=0; k<avoid_li.length; k++){
+            if(avoid_li[k].style.background){
+                selected=1; }}
+        if(selected==1){
+            rem_b.style.background='#f5ddee'; }}
+
+    rem_b.onmouseleave=()=>{
+        if(mode==0){
+            rem_b.style.background='#fff'; }}
+
+
     rem_b.onclick=()=>{
         let avoid_li=document.querySelectorAll('.avoid_li');
         for(let k=0; k<avoid_li.length; k++){
             if(avoid_li[k].style.background){
                 let select_text=avoid_li[k].textContent;
-                if(mode_lt==0){
-                    avoid=avoid.filter(function(item){
-                        return item!=select_text; }); }
-                else{
-                    avoid_tx=avoid_tx.filter(function(item){
-                        return item!=select_text; }); }
+                avoid=avoid.filter(function(item){
+                    return item!=select_text; });
+
                 set_new_link();
                 rem_link(); }}}
 
@@ -421,31 +407,18 @@ function rem_link(){
 
 
 function set_new_link(){
-    if(mode_lt==0){
-        let set=new Set(avoid);
-        avoid=[...set]; // 追加分をチェックして配列を更新
-        let write_json=JSON.stringify(avoid);
-        localStorage.setItem('TwAvoid_Link', write_json); } // ストレージ保存
-    else{
-        let set_tx=new Set(avoid_tx);
-        avoid_tx=[...set_tx]; // 追加分をチェックして配列を更新
-        let write_json=JSON.stringify(avoid_tx);
-        localStorage.setItem('TwAvoid_Text', write_json); } // ストレージ保存
-
-    new_reg(); // テキスト検索設定を更新
+    let set=new Set(avoid);
+    avoid=[...set]; // 追加分をチェックして配列を更新
+    let write_json=JSON.stringify(avoid);
+    localStorage.setItem('TwAvoid_Link', write_json); // ストレージ保存
 
     let avoid_ul=document.querySelector('.avoid_ul');
     if(avoid_ul){
         avoid_ul.innerHTML=''; // リスト表示をクリア
 
-        if(mode_lt==0){
-            for(let k=avoid.length-1; k>=0; k--){
-                let link_li='<li class="avoid_li">'+ avoid[k] +'</li>';
-                avoid_ul.insertAdjacentHTML('beforeend', link_li); }}
-        else{
-            for(let k=avoid_tx.length-1; k>=0; k--){
-                let link_li='<li class="avoid_li">'+ avoid_tx[k] +'</li>';
-                avoid_ul.insertAdjacentHTML('beforeend', link_li); }}}
+        for(let k=avoid.length-1; k>=0; k--){
+            let link_li='<li class="avoid_li">'+ avoid[k] +'</li>';
+            avoid_ul.insertAdjacentHTML('beforeend', link_li); }}
 
 } // set_new_link()
 
@@ -456,30 +429,38 @@ function file_menu(){
 
     let twa_memo=document.querySelector('.twa_memo');
     let twa_file=document.querySelector('.twa_file');
-    if(twa_memo && twa_file){
+    let main_panel=document.querySelector('.main_panel');
+    if(twa_memo && twa_file && main_panel){
         if(act==0){
-            twa_file.style.display='none' }
+            twa_file.style.display='none';
+            main_panel.style.display='block'; }
         else{
             act=1;
             twa_file.style.display='block';
+            main_panel.style.display='none';
             backup(); }
 
         twa_memo.onclick=()=>{
             if(act==0){
                 act=1;
                 twa_file.style.display='block';
+                main_panel.style.display='none';
                 backup(); }
             else{
                 act=0;
-                twa_file.style.display='none'; }}}
+                twa_file.style.display='none';
+                main_panel.style.display='block'; }}}
 
 
     function file_menu_close(n){
+        twa_file.style.background='#b0bec5';
         twa_file.style.boxShadow='0 0 0 100vh #b0bec5';
         setTimeout(()=>{
             act=0;
+            twa_file.style.background='#fff';
+            twa_file.style.boxShadow='';
             twa_file.style.display='none';
-            twa_file.style.boxShadow='0 0 0 100vh #fff';
+            main_panel.style.display='block';
             if(n==1){
                 let twa_panel=document.querySelector('#twa_panel');
                 if(twa_panel){
@@ -501,14 +482,6 @@ function file_menu(){
             a_elem.download='TwAvoid_L.json'; // 保存ファイル名
             a_elem.click();
             URL.revokeObjectURL(a_elem.href);
-
-            write_json=JSON.stringify(avoid_tx); // 配列 avoid_tx を取得
-            blob=new Blob([write_json], {type: 'application/json'});
-            let b_elem=document.createElement('a');
-            b_elem.href=URL.createObjectURL(blob);
-            b_elem.download='TwAvoid_T.json'; // 保存ファイル名
-            b_elem.click();
-            URL.revokeObjectURL(b_elem.href);
 
             file_menu_close(0); }
 
@@ -536,20 +509,7 @@ function file_menu(){
                     localStorage.setItem('TwAvoid_Link', write_json); } // ストレージ保存
                 file_menu_close(1); }
 
-            else if(file.name.includes('TwAvoid_T')){ // テキストの配列
-                let file_reader=new FileReader();
-                file_reader.readAsText(file);
-                file_reader.onload=function(){
-                    let data_in=JSON.parse(file_reader.result);
-                    let new_arr=Array.from(new Set([...avoid_tx, ...data_in])); // 差分を追加
-                    avoid_tx=new_arr;
-                    let write_json=JSON.stringify(avoid_tx);
-                    localStorage.setItem('TwAvoid_Text', write_json); // ストレージ保存
-                    new_reg(); }
-                file_menu_close(1); }
-
         });
     } // backup()
 
 } // file_menu()
-
