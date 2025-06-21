@@ -1,7 +1,7 @@
-// ==UserScript==
+​// ==UserScript==
 // @name        TwAvoid
 // @namespace        http://tampermonkey.net/
-// @version        1.2
+// @version        1.3
 // @description        Twitter Filter
 // @author        Everyone
 // @match        https://twitter.com/*
@@ -21,12 +21,13 @@ let home_ua; // 開いているタイムラインのユーザーアカウント
 let read_json=localStorage.getItem('TwAvoid_Link'); // ローカルストレージ保存名
 avoid=JSON.parse(read_json);
 if(avoid==null){
-    avoid=['temporary-link']; }
+    avoid=[]; }
 
 
 
 setTimeout(()=>{
     page_ck();
+
     let target=document.querySelector('head title');
     let monitor0=new MutationObserver(page_ck);
     monitor0.observe(target, { childList: true });
@@ -386,14 +387,24 @@ function rem_link(){
             rem_b.style.background='#fff'; }}
 
 
-    rem_b.onclick=()=>{
-        let avoid_li=document.querySelectorAll('.avoid_li');
-        for(let k=0; k<avoid_li.length; k++){
-            if(avoid_li[k].style.background){
-                let select_text=avoid_li[k].textContent;
-                avoid=avoid.filter(function(item){
-                    return item!=select_text; });
-
+    rem_b.onclick=(event)=>{
+        if(!event.shiftKey){
+            let avoid_li=document.querySelectorAll('.avoid_li');
+            for(let k=0; k<avoid_li.length; k++){
+                if(avoid_li[k].style.background){
+                    let select_text=avoid_li[k].textContent;
+                    avoid=avoid.filter(function(item){
+                        return item!=select_text; });
+                    set_new_link();
+                    rem_link(); }}}
+        else{
+            let result=window.confirm(
+                '💢　フィルターの全ての「リンク」を削除します\n'+
+                '　　 　この操作をする前に、「ファイル保存」でフィルターのデータを\n'+
+                '　　 　バックアップしておく事を勧めます\n\n'+
+                '　　 全ての「リンク」を削除をする場合は「OK」をクリックしてください');
+            if(result){
+                avoid=[];
                 set_new_link();
                 rem_link(); }}}
 
@@ -462,9 +473,16 @@ function file_menu(){
             twa_file.style.display='none';
             main_panel.style.display='block';
             if(n==1){
-                let twa_panel=document.querySelector('#twa_panel');
-                if(twa_panel){
-                    twa_panel.remove(); }}
+                let avoid_ul=document.querySelector('.avoid_ul');
+                if(avoid_ul){
+                    avoid_ul.innerHTML=''; // リスト表示をクリア
+
+                    for(let k=avoid.length-1; k>=0; k--){
+                        let link_li='<li class="avoid_li">'+ avoid[k] +'</li>';
+                        avoid_ul.insertAdjacentHTML('beforeend', link_li); }}
+
+                set_link(''); }
+
         }, 500); }
 
 
@@ -507,9 +525,10 @@ function file_menu(){
                     avoid=new_arr;
                     let write_json=JSON.stringify(avoid);
                     localStorage.setItem('TwAvoid_Link', write_json); } // ストレージ保存
-                file_menu_close(1); }
-
+                file_menu_close(1);
+                twa_file_input.value=''; } // input type="file"のリセット
         });
+
     } // backup()
 
 } // file_menu()
