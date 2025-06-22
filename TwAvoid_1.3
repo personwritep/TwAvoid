@@ -2,11 +2,10 @@
 // @name        TwAvoid
 // @namespace        http://tampermonkey.net/
 // @version        1.3
-// @description        Twitter Filter
+// @description        「X」サイトのFilter機能
 // @author        Everyone
-// @match        https://twitter.com/*
 // @match        https://x.com/*
-// @icon        https://www.google.com/s2/favicons?sz=64&domain=twitter.com
+// @icon        https://www.google.com/s2/favicons?sz=64&domain=x.com
 // @grant        none
 // @updateURL        https://github.com/personwritep/TwAvoid/raw/main/TwAvoid.user.js
 // @downloadURL        https://github.com/personwritep/TwAvoid/raw/main/TwAvoid.user.js
