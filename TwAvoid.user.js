@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        TwAvoid
 // @namespace        http://tampermonkey.net/
-// @version        1.3
+// @version        1.4
 // @description        「X」サイトのFilter機能
 // @author        Everyone
 // @match        https://x.com/*
@@ -362,9 +362,16 @@ function rem_link(){
     let avoid_li=document.querySelectorAll('.avoid_li');
     for(let k=0; k<avoid_li.length; k++){
         avoid_li[k].onclick=()=>{
-            clear();
-            rem_b.style.outline='2px solid red';
-            avoid_li[k].style.background='#cfd8dc'; }}
+            if(!avoid_li[k].style.background){
+                clear();
+                rem_b.style.outline='2px solid red';
+                avoid_li[k].style.background='#cfd8dc'; }
+            else{ // 既に選択している行をクリックした場合はチェックウインドウを開く
+                let link_code=avoid_li[k].textContent;
+                let link='https://x.com'+ link_code;
+                window.open( link, null, 'top=40, left=20, width=720, height=800');
+            }}}
+
 
     function clear(){
         let avoid_li=document.querySelectorAll('.avoid_li');
