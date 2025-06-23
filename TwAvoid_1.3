@@ -1,4 +1,4 @@
-​// ==UserScript==
+// ==UserScript==
 // @name        TwAvoid
 // @namespace        http://tampermonkey.net/
 // @version        1.3
