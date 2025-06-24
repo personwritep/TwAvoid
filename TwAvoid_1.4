@@ -369,7 +369,7 @@ function rem_link(){
             else{ // 既に選択している行をクリックした場合はチェックウインドウを開く
                 let link_code=avoid_li[k].textContent;
                 let link='https://x.com'+ link_code;
-                window.open( link, null, 'top=40, left=20, width=720, height=800');
+                window.open( link, null, 'top=20, left=0, width=720, height=800');
             }}}
 
 
