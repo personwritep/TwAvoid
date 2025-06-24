@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        TwAvoid
 // @namespace        http://tampermonkey.net/
-// @version        1.4
+// @version        1.5
 // @description        「X」サイトのFilter機能
 // @author        Everyone
 // @match        https://x.com/*
@@ -34,7 +34,11 @@ setTimeout(()=>{
 
 
 function page_ck(){
-    home_ua='/'+ location.pathname.split('/')[1];
+    if(location.pathname.split('/')[1]=='hashtag'){
+        home_ua='/hashtag/'+ location.pathname.split('/')[2]; }
+    else{
+        home_ua='/'+ location.pathname.split('/')[1]; }
+    home_ua=decodeURI(home_ua); // 漢字を含む場合はデコード🔵
 
     let retry=0;
     let interval=setInterval(wait_target, 100);
@@ -116,6 +120,7 @@ function main(){
             let url=[];
             for(let i=0; i<all_link.length; i++){
                 url.push(select_url(all_link[i])); }
+
             if(check_url(url)){
                 hav=1; }
 
@@ -129,6 +134,7 @@ function main(){
 
         function select_url(get_url){
             let get=get_url.getAttribute('href');
+            get=get.split('?')[0]; // クエリ文字列を削除 🔵
             if(get!=home_ua){
                 return get; }}
 
@@ -424,6 +430,9 @@ function rem_link(){
 
 
 function set_new_link(){
+    avoid=avoid.map(function(value){
+        return value.split('?')[0]; }); // クエリ文字列を削除 🔵
+
     let set=new Set(avoid);
     avoid=[...set]; // 追加分をチェックして配列を更新
     let write_json=JSON.stringify(avoid);
