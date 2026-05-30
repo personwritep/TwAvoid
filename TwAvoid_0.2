@@ -1,0 +1,70 @@
+// ==UserScript==
+// @name         TwAvoid
+// @namespace    http://tampermonkey.net/
+// @version      0.2
+// @description  Twitter Filter
+// @author        Everyone
+// @match        https://twitter.com/*
+// @icon           https://www.google.com/s2/favicons?sz=64&domain=twitter.com
+// @grant        none
+// ==/UserScript==
+
+
+// 🔴 特定のURLのハッシュタグ・ユーザーリンクを含むツイートを非表示
+let avoid=['/RakutenJP', '/digimartnet'];
+
+// 🔴 特定の文字列を含むツイートを非表示　複数は縦棒で分割
+let avoid_regexp=/@RakutenJP|楽天カード/;
+
+
+setTimeout(()=>{
+    let target=document.querySelector('head title');
+    let monitor0=new MutationObserver(page_ck);
+    monitor0.observe(target, { childList: true });
+}, 200);
+
+
+function page_ck(){
+    let retry=0;
+    let interval=setInterval(wait_target, 100);
+    function wait_target(){
+        retry++;
+        if(retry>50){ // リトライ制限 5secまで
+            clearInterval(interval); }
+        let time_line=get_line(); // 監視 target
+        if(time_line){
+            clearInterval(interval);
+            let monitor1=new MutationObserver(main);
+            monitor1.observe(time_line, { childList: true }); }}
+
+    function get_line(){
+        let cell=document.querySelector('[data-testid="cellInnerDiv"]');
+        if(cell){
+            let container=cell.parentNode;
+            return container; }}
+} // page_ck()
+
+
+
+function main(){
+    let cell=document.querySelectorAll('[data-testid="cellInnerDiv"]');
+    for(let k=0; k<cell.length; k++){
+        if(cell[k].style.opacity!='2'){
+
+            // ❶ の検索処理 🟦⬜
+            let all_link=cell[k].querySelectorAll('a');
+            let url=[];
+            for(let i=0; i<all_link.length; i++){
+                url.push(all_link[i].getAttribute('href')) }
+            let result=url.filter(data=>avoid.includes(data));
+            if(result.length>0){
+                cell[k].style.display='none'; }
+
+            // ❷ の検索処理 🟦⬜
+            let tweet_text=cell[k].textContent;
+            if(avoid_regexp.test(tweet_text)){
+                cell[k].style.display='none'; }
+
+            cell[k].style.opacity='2' }}
+
+} // main()
